@@ -22,59 +22,59 @@
 
 What is Kickstart?
 
-  Kickstart.nvim is *not* a distribution.
+Kickstart.nvim is *not* a distribution.
 
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
+Kickstart.nvim is a starting point for your own configuration.
+  The goal is that you can read every line of code, top-to-bottom, understand
+  what your configuration is doing, and modify it to suit your needs.
 
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
+  Once you've done that, you can start exploring, configuring and tinkering to
+  make Neovim your own! That might mean leaving kickstart just the way it is for a while
+  or immediately breaking it into modular pieces. It's up to you!
 
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
+  If you don't know anything about Lua, I recommend taking some time to read through
+  a guide. One possible example which will only take 10-15 minutes:
+    - https://learnxinyminutes.com/docs/lua/
 
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
+  After understanding a bit more about Lua, you can use `:help lua-guide` as a
+  reference for how Neovim integrates Lua.
+  - :help lua-guide
+  - (or HTML version): https://neovim.io/doc/user/lua-guide.html
 
 Kickstart Guide:
 
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
+TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
 
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
+  If you don't know what this means, type the following:
+    - <escape key>
+    - :
+    - Tutor
+    - <enter key>
 
-    (If you already know how the Neovim basics, you can skip this step)
+  (If you already know how the Neovim basics, you can skip this step)
 
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua
+Once you've completed that, you can continue working through **AND READING** the rest
+of the kickstart init.lua
 
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
+Next, run AND READ `:help`.
+  This will open up a help window with some basic information
+  about reading, navigating and searching the builtin help documentation.
 
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite neovim features.
+  This should be the first place you go to look when you're stuck or confused
+  with something. It's one of my favorite neovim features.
 
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not sure exactly what you're looking for.
+  MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
+  which is very useful when you're not sure exactly what you're looking for.
 
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or neovim features used in kickstart.
+I have left several `:help X` comments throughout the init.lua
+  These are hints about where to find more information about the relevant settings,
+  plugins or neovim features used in kickstart.
 
-   NOTE: Look for lines like this
+ NOTE: Look for lines like this
 
-    Throughout the file. These are for you, the reader, to help understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your nvim config.
+  Throughout the file. These are for you, the reader, to help understand what is happening.
+  Feel free to delete them once you know what you're doing, but they should serve as a guide
+  for when you are first encountering a few different constructs in your nvim config.
 
 If you experience any errors while trying to install kickstart, run `:checkhealth` for more info
 
@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -147,6 +147,7 @@ vim.opt.inccommand = 'split'
 
 -- Show which line your cursor is on
 vim.opt.cursorline = true
+vim.opt.colorcolumn = '80'
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
@@ -242,6 +243,7 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+  { 'Bekaboo/deadcolumn.nvim', opts = {} },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following lua:
@@ -610,9 +612,23 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    config = function()
+      require('typescript-tools').setup {
+        on_attach = function(client)
+          client.server_capabilities.documentFormattingProvider = false
+          client.server_capabilities.documentRangeFormattingProvider = false
+        end,
+      }
+    end,
+  },
+
   { -- Autoformat
     'stevearc/conform.nvim',
     opts = {
+      async = true,
       notify_on_error = false,
       format_on_save = {
         timeout_ms = 500,
@@ -625,9 +641,35 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { { "prettierd", "prettier" } },
+        javascript = { { 'prettierd' } },
+        typescript = { { 'prettierd' } },
+        typescriptreact = { { 'prettierd' } },
       },
     },
+  },
+
+  { -- Linting
+    'mfussenegger/nvim-lint',
+    event = { 'BufReadPre', 'BufNewFile' },
+    config = function()
+      local lint = require 'lint'
+      lint.linters_by_ft = {
+        typescript = { 'eslint_d' },
+        typescriptreact = { 'eslint_d' },
+        javascript = { 'eslint_d' },
+        go = { 'golangcilint' },
+      }
+
+      -- Create autocommand which carries out the actual linting
+      -- on the specified events.
+      local lint_augroup = vim.api.nvim_create_augroup('lint', { clear = true })
+      vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
+        group = lint_augroup,
+        callback = function()
+          require('lint').try_lint()
+        end,
+      })
+    end,
   },
 
   { -- Autocompletion
@@ -728,21 +770,16 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
-    'rose-pine/neovim',
-    name = 'rose-pine',
+    'folke/tokyonight.nvim',
     lazy = false, -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
-      require('rose-pine').setup {
-        dark_variant = 'moon',
-        dim_inactive_windows = true,
-        styles = {
-          italic = false,
-          bold = false,
-        },
-      }
+      -- Load the colorscheme here.
+      -- Like many other themes, this one has different styles, and you could load
+      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      vim.cmd.colorscheme 'tokyonight-night'
 
-      vim.cmd.colorscheme 'rose-pine'
+      -- You can configure highlights by doing something like
       vim.cmd.hi 'Comment gui=none'
     end,
   },
